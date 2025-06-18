@@ -36,7 +36,7 @@ Monitors water system pressure and temperature in pumphouse environments using d
 
 1. Flash the ESP32-C3 with `pumphouse.yaml` using ESPHome.
 2. Update `!secret` values for Wi-Fi, API, and OTA credentials.
-3. Save folers under .esphome directory to your local HA esphome directory.
+3. Save folders under .esphome directory to your local HA esphome directory.
 4. Power the device and access its web interface at `http://<device-ip>`.
 5. Use the web UI or Home Assistant to calibrate and monitor sensors.
 
