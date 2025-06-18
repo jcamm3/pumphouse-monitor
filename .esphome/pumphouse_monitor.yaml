@@ -69,10 +69,10 @@ logger:
 # === Remote API and OTA Update Support ===
 api:
   encryption:
-    key: "Lm+Yuqun5sQa7Q14IurFsHjK7ayXirwm40EtxjFQdxY="
+    key: ""
 ota:
   - platform: esphome
-    password: "d9798d2ed2bc958718d4bc21979ed9a1"
+    password: !secret password
 
 # === Wifi and Fallback Hotspot Configuration ===
 wifi:
@@ -80,7 +80,7 @@ wifi:
   password: !secret wifi_password
   ap:
     ssid: "pumphouse"
-    password: "uMDPW9mlouOl"
+    password: !secret password
 
 # === Captive Portal ===
 # For fallback access when not connected to Wi-Fi.
@@ -90,8 +90,8 @@ captive_portal:
 web_server:
   version: 3
   auth:
-    username: saintmoor
-    password: saintmoor
+    username: !secret username
+    password: !secret password
   sorting_groups:
     - id: pressure_values_1
       name: "Pressure Sensor 1"
