@@ -4,7 +4,7 @@ Monitors water system pressure and temperature in pumphouse environments using d
 
 ## Features
 
-- Dual 100 PSI analog pressure transducers (SEN0257)
+- Dual 0~1.6 Mpa analog pressure transducers (SEN0257)
 - Temperature-compensated pressure correction (auto/manual)
 - OLED display cycling through multiple data views
 - RGB LED status indicator (color-coded by pressure state)
