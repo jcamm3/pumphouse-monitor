@@ -1,46 +1,57 @@
-# Pumphouse Monitor
+# Pumphouse Monitor (ESPHome) — v1.2.0
 
-Monitors water system pressure and temperature in pumphouse environments using dual analog pressure sensors and a digital temp/humidity sensor. Includes OLED display, RGB status LED, and web interface for real-time monitoring and calibration. Integrates with Home Assistant.
+An ESP32-C3 based pumphouse monitor with dual ratiometric pressure sensors (5V, 0.5–4.5V via divider), SHT30 temp/humidity, SSD1306 OLED pages, status LED with night mode, SNTP, and a built-in web UI for calibration and runtime controls.
 
-## Features
-
-- Dual 0~1.6 Mpa analog pressure transducers (SEN0257)
-- Temperature-compensated pressure correction (auto/manual)
-- OLED display cycling through multiple data views
-- RGB LED status indicator (color-coded by pressure state)
-- Web interface with grouped values and calibration controls
-- Home Assistant integration via encrypted API
-- OTA firmware updates via ESPHome
+## Highlights
+- **Accurate 5V ratiometric pressure handling** — 0 PSI at **0.5V** (→ ~**0.33V** at ADC with divider), full-scale at **4.5V** (→ ~**2.97V** at ADC).
+- **Smoother pressure readings** — median + EMA + small sliding window; throttle updates to HA to reduce chatter.
+- **OLED UI** with multi-page layout for time, temperature, humidity, and pressure.
+- **Night Mode** for the onboard NeoPixel to keep things dark between set hours.
+- **Web UI** groups for calibration, thresholds, and system info.
 
 ## Hardware
+- **Board:** ESP32-C3 DevKitM-1
+- **Pressure sensors:** SEN0257-class, powered at 5V, analog output 0.5–4.5V
+- **Divider:** scale sensor output to ESP32 ADC range (e.g., 100k/68k); ADC sees ~0.33–2.97V
+- **I²C:** SHT30 + SSD1306 OLED
+- **LED:** Onboard NeoPixel (GPIO8)
 
-- ESP32-C3 (Espressif DevKitM-1)
-- (2x) SEN0257 analog pressure sensors
-- SHT30 temperature & humidity sensor
-- SSD1306 128x64 OLED display (I2C)
-- Neopixel RGB LED (WS2812 or compatible)
+### Pin Map
+| GPIO | Function                    |
+|-----:|-----------------------------|
+|   0  | Pressure Sensor 1 (ADC)     |
+|   1  | Pressure Sensor 2 (ADC)     |
+|   2  | I²C SDA (OLED, SHT30)       |
+|   3  | I²C SCL (OLED, SHT30)       |
+|   8  | Onboard NeoPixel            |
 
-## Wiring
+## Calibration — Offset & Scale
+- Set **offset_volts** so that *at true 0 PSI*, your **Sensor Volts (Raw)** equals the offset (typically ~**0.33V** with a 5V sensor + divider).
+- Pressure (kPa) equivalent constant remains `606.0606` for a 1.6 MPa transducer (0.33–2.97V span at the ADC).
+- Fine-tune against a known gauge point by nudging the offset a few hundredths of a volt.
 
-| Component               | ESP32-C3 Pin | Notes                |
-|------------------------|--------------|----------------------|
-| Pressure Sensor 1      | GPIO00       | ADC input            |
-| Pressure Sensor 2      | GPIO04       | ADC input            |
-| SHT30 Sensor (I2C)     | SDA/SCL      | I2C address: `0x44`  |
-| OLED Display (I2C)     | SDA/SCL      | I2C address: `0x3C`  |
-| RGB LED (Neopixel)     | GPIO08       | Single-pin data line |
+## Smoothing Tunables
+A practical chain that balances stability and responsiveness:
+- `median` (window 7–11)
+- `exponential_moving_average` (`alpha` 0.20–0.35)
+- `sliding_window_moving_average` (window 6–10)
+- `throttle: 1s` on derived kPa/psi sensors
 
-> All components powered at 3.3V. SEN0257 accuracy may vary slightly due to suboptimal voltage.
+Optional: add an anti-spike guard lambda to drop single-frame jumps (e.g., `>5 psi`).
+
+## Web UI
+Sorting groups are used to keep config/settings vs. live values organized. Tune thresholds, night mode, and calibration live.
 
 ## Getting Started
+1. Review the pin map and resistor divider.
+2. Flash via ESPHome; connect to Wi‑Fi and open the web UI.
+3. Set **offset_volts** at 0 PSI; verify psi/kPa vs. your mechanical gauge.
+4. Adjust smoothing parameters if needed.
 
-1. Flash the ESP32-C3 with `pumphouse.yaml` using ESPHome.
-2. Update `!secret` values for Wi-Fi, API, and OTA credentials.
-3. Save folders under .esphome directory to your local HA esphome directory.
-4. Power the device and access its web interface at `http://<device-ip>`.
-5. Use the web UI or Home Assistant to calibrate and monitor sensors.
+---
 
-## License
+**Version:** v1.2.0  
 
-MIT License  
-© 2025 John Camm
+**Last Updated:** 2025-08-25  
+
+**Author:** John Camm
